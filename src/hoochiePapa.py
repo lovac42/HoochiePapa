@@ -2,7 +2,7 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.1
+# Version: 0.0.2
 
 # Title is in reference to Seinfeld, no relations to the current slang term.
 
@@ -47,7 +47,9 @@ def fillNew(self, _old):
         lim=min(self.queueLimit,lim)
         self._newQueue=getNewQueuePerSubDeck(self,lim)
         if self._newQueue:
-            self._newQueue.reverse() #preserve order
+            r = random.Random()
+            # r.seed(self.today) #same seed in case user edits card.
+            r.shuffle(self._newQueue)
             return True
     if self.newCount:
         # if we didn't get a card but the count is non-zero,
