@@ -2,7 +2,7 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.2
+# Version: 0.0.3
 
 # Title is in reference to Seinfeld, no relations to the current slang term.
 
@@ -99,18 +99,10 @@ if ANKI21:
 else:
     from PyQt4 import QtCore, QtGui as QtWidgets
 
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except AttributeError:
-    def _fromUtf8(s):
-        return s
-
 def setupUi(self, Preferences):
     r=self.gridLayout_4.rowCount()
     self.hoochiePapa = QtWidgets.QCheckBox(self.tab_1)
-    self.hoochiePapa.setObjectName(_fromUtf8("hoochiePapa"))
     self.hoochiePapa.setText(_('Hoochie Papa! Randomize NEW'))
-    self.hoochiePapa.toggled.connect(lambda:toggle(self))
     self.gridLayout_4.addWidget(self.hoochiePapa, r, 0, 1, 3)
 
 def __init__(self, mw):
@@ -122,12 +114,6 @@ def accept(self):
     qc = self.mw.col.conf
     qc['hoochiePapa']=self.form.hoochiePapa.checkState()
 
-def toggle(self):
-    checked=not self.hoochiePapa.checkState()==0
-    if checked:
-        try:
-            self.serenityNow.setCheckState(0)
-        except: pass
 
 aqt.forms.preferences.Ui_Preferences.setupUi = wrap(aqt.forms.preferences.Ui_Preferences.setupUi, setupUi, "after")
 aqt.preferences.Preferences.__init__ = wrap(aqt.preferences.Preferences.__init__, __init__, "after")
