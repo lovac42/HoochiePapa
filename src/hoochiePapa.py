@@ -2,7 +2,7 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.3
+# Version: 0.0.4
 
 # Title is in reference to Seinfeld, no relations to the current slang term.
 
@@ -59,23 +59,34 @@ def fillNew(self, _old):
         return self._fillNew()
 
 
-
-def getNewQueuePerSubDeck(self,penetration):
+#Custom queue builder for New-Queue
+def getNewQueuePerSubDeck(sched,penetration):
     newQueue=[]
-    pen=penetration//len(self.col.decks.active())
+    LEN=len(sched._newDids)
+    if LEN>10: #shuffle deck ids
+        sched._newDids=cutDecks(sched._newDids,LEN)
+    pen=penetration//LEN
     pen=max(5,pen) #if div by large val
-    for did in self._newDids:
-        lim=self._deckNewLimit(did)
+    for did in sched._newDids:
+        lim=sched._deckNewLimit(did)
         if not lim: continue
         lim=min(pen,lim)
 
-        arr=self.col.db.list("""
+        arr=sched.col.db.list("""
 select id from cards where
 did = ? and queue = 0
 order by due limit ?""", did, lim)
         newQueue.extend(arr)
         if len(newQueue)>=penetration: break
     return newQueue
+
+
+
+#Like cutting cards, this is a quick and dirty way to randomize the deck ids
+def cutDecks(queue,total):
+    assert(total>10)
+    cut=total//random.randint(2,5)
+    return queue[cut:]+queue[:cut]
 
 
 anki.sched.Scheduler._fillNew = wrap(anki.sched.Scheduler._fillNew, fillNew, 'around')
