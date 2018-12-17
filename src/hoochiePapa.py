@@ -2,9 +2,17 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.4
+# Version: 0.0.5
 
-# Title is in reference to Seinfeld, no relations to the current slang term.
+
+# == User Config =========================================
+
+# Performance impact cost O(n)
+# Uses quick shuffle if limit is exceeded.
+DECK_LIST_SHUFFLE_LIMIT = 50
+
+# == End Config ==========================================
+##########################################################
 
 import random
 import anki.sched
@@ -63,10 +71,13 @@ def fillNew(self, _old):
 def getNewQueuePerSubDeck(sched,penetration):
     newQueue=[]
     LEN=len(sched._newDids)
-    if LEN>10: #shuffle deck ids
+    if LEN>DECK_LIST_SHUFFLE_LIMIT: #segments
         sched._newDids=cutDecks(sched._newDids,LEN)
-    pen=penetration//LEN
-    pen=max(5,pen) #if div by large val
+    elif LEN>10: #shuffle deck ids
+        r=random.Random()
+        r.shuffle(sched._newDids)
+
+    pen=max(5,penetration//LEN) #if div by large val
     for did in sched._newDids:
         lim=sched._deckNewLimit(did)
         if not lim: continue
