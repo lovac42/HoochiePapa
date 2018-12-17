@@ -2,7 +2,7 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.5
+# Version: 0.0.6
 
 
 # == User Config =========================================
@@ -96,7 +96,8 @@ order by due limit ?""", did, lim)
 #Like cutting cards, this is a quick and dirty way to randomize the deck ids
 def cutDecks(queue,total):
     assert(total>10)
-    cut=total//random.randint(2,5)
+    p=random.randint(15,85) # %
+    cut=total*p//100
     return queue[cut:]+queue[:cut]
 
 
