@@ -2,16 +2,21 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.6
+# Version: 0.0.7
 
 
 # == User Config =========================================
 
-# Performance impact cost O(n)
-# Uses quick shuffle if limit is exceeded.
-DECK_LIST_SHUFFLE_LIMIT = 50
+# None
 
 # == End Config ==========================================
+
+## Performance Config ####################################
+
+# Performance impact cost O(n)
+# Uses quick shuffle if limit is exceeded.
+DECK_LIST_SHUFFLE_LIMIT = 256
+
 ##########################################################
 
 import random
@@ -72,7 +77,7 @@ def getNewQueuePerSubDeck(sched,penetration):
     newQueue=[]
     LEN=len(sched._newDids)
     if LEN>DECK_LIST_SHUFFLE_LIMIT: #segments
-        sched._newDids=cutDecks(sched._newDids,LEN)
+        sched._newDids=cutDecks(sched._newDids,4) #0based
     elif LEN>10: #shuffle deck ids
         r=random.Random()
         r.shuffle(sched._newDids)
@@ -92,12 +97,14 @@ order by due limit ?""", did, lim)
     return newQueue
 
 
-
 #Like cutting cards, this is a quick and dirty way to randomize the deck ids
-def cutDecks(queue,total):
-    assert(total>10)
-    p=random.randint(15,85) # %
+def cutDecks(queue,cnt=0):
+    total=len(queue)
+    p=random.randint(30,70) # %
     cut=total*p//100
+    if cnt:
+        q=cutDecks(queue[cut:],cnt-1)
+        return q+cutDecks(queue[:cut],cnt-1)
     return queue[cut:]+queue[:cut]
 
 
