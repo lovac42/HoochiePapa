@@ -2,7 +2,7 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.7
+# Version: 0.0.8
 
 
 # == User Config =========================================
@@ -76,11 +76,12 @@ def fillNew(self, _old):
 def getNewQueuePerSubDeck(sched,penetration):
     newQueue=[]
     LEN=len(sched._newDids)
-    if LEN>DECK_LIST_SHUFFLE_LIMIT: #segments
-        sched._newDids=cutDecks(sched._newDids,4) #0based
-    elif LEN>10: #shuffle deck ids
-        r=random.Random()
-        r.shuffle(sched._newDids)
+    if LEN>10: #auto shuffles >=10, 50/5
+        if LEN>DECK_LIST_SHUFFLE_LIMIT: #segments
+            sched._newDids=cutDecks(sched._newDids,4) #0based
+        else: #shuffle deck ids
+            r=random.Random()
+            r.shuffle(sched._newDids)
 
     pen=max(5,penetration//LEN) #if div by large val
     for did in sched._newDids:
