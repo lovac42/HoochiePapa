@@ -2,9 +2,22 @@
 # Copyright: (C) 2018 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.0.3
+# Version: 0.0.8
 
-# Title is in reference to Seinfeld, no relations to the current slang term.
+
+# == User Config =========================================
+
+# None
+
+# == End Config ==========================================
+
+## Performance Config ####################################
+
+# Performance impact cost O(n)
+# Uses quick shuffle if limit is exceeded.
+DECK_LIST_SHUFFLE_LIMIT = 256
+
+##########################################################
 
 import random
 import anki.sched
@@ -59,23 +72,41 @@ def fillNew(self, _old):
         return self._fillNew()
 
 
-
-def getNewQueuePerSubDeck(self,penetration):
+#Custom queue builder for New-Queue
+def getNewQueuePerSubDeck(sched,penetration):
     newQueue=[]
-    pen=penetration//len(self.col.decks.active())
-    pen=max(5,pen) #if div by large val
-    for did in self._newDids:
-        lim=self._deckNewLimit(did)
+    LEN=len(sched._newDids)
+    if LEN>10: #auto shuffles >=10, 50/5
+        if LEN>DECK_LIST_SHUFFLE_LIMIT: #segments
+            sched._newDids=cutDecks(sched._newDids,4) #0based
+        else: #shuffle deck ids
+            r=random.Random()
+            r.shuffle(sched._newDids)
+
+    pen=max(5,penetration//LEN) #if div by large val
+    for did in sched._newDids:
+        lim=sched._deckNewLimit(did)
         if not lim: continue
         lim=min(pen,lim)
 
-        arr=self.col.db.list("""
+        arr=sched.col.db.list("""
 select id from cards where
 did = ? and queue = 0
 order by due limit ?""", did, lim)
         newQueue.extend(arr)
         if len(newQueue)>=penetration: break
     return newQueue
+
+
+#Like cutting cards, this is a quick and dirty way to randomize the deck ids
+def cutDecks(queue,cnt=0):
+    total=len(queue)
+    p=random.randint(30,70) # %
+    cut=total*p//100
+    if cnt:
+        q=cutDecks(queue[cut:],cnt-1)
+        return q+cutDecks(queue[:cut],cnt-1)
+    return queue[cut:]+queue[:cut]
 
 
 anki.sched.Scheduler._fillNew = wrap(anki.sched.Scheduler._fillNew, fillNew, 'around')
