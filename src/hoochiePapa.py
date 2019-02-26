@@ -2,7 +2,7 @@
 # Copyright: (C) 2018-2019 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.2.1
+# Version: 0.2.2
 
 
 
@@ -182,7 +182,7 @@ def setupUi(self, Preferences):
     self.hoochiePapa = QtWidgets.QCheckBox(self.lrnStage)
     self.hoochiePapa.setText(_('Hoochie Papa! Randomize New'))
     self.lrnStageGLayout.addWidget(self.hoochiePapa, r, 0, 1, 3)
-
+    self.hoochiePapa.clicked.connect(lambda:toggle(self))
 
     r+=1
     self.hoochiePapaSortLbl=QtWidgets.QLabel(self.lrnStage)
@@ -206,12 +206,24 @@ def load(self, mw):
     self.form.hoochiePapa.setCheckState(cb)
     idx=qc.get("hoochiePapaSort", 0)
     self.form.hoochiePapaSort.setCurrentIndex(idx)
+    toggle(self.form)
 
 
 def save(self):
+    toggle(self.form)
     qc = self.mw.col.conf
     qc['hoochiePapa']=self.form.hoochiePapa.checkState()
     qc['hoochiePapaSort']=self.form.hoochiePapaSort.currentIndex()
+
+
+def toggle(self):
+    checked=self.hoochiePapa.checkState()
+    if checked:
+        grayout=False
+    else:
+        grayout=True
+    self.hoochiePapaSort.setDisabled(grayout)
+    self.hoochiePapaSortLbl.setDisabled(grayout)
 
 
 aqt.forms.preferences.Ui_Preferences.setupUi = wrap(aqt.forms.preferences.Ui_Preferences.setupUi, setupUi, "after")
