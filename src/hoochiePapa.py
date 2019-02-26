@@ -2,7 +2,7 @@
 # Copyright: (C) 2018-2019 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.2.0
+# Version: 0.2.1
 
 
 
@@ -11,14 +11,16 @@ CUSTOM_SORT = {
 
 # == User Config =========================================
 
-  1:["Incremental Due",     "order by due asc"],
-  2:["Decremental Due",    "order by due desc"],
-  3:["Creation Time (asc)",  "order by id asc"],
-  4:["Creation Time (dec)", "order by id desc"],
-  5:["Left (asc)",         "order by left asc"],
-  6:["Left (dec)",        "order by left desc"],
-  7:["Factor (asc)",     "order by factor asc"],
-  8:["Factor (dec)",    "order by factor desc"]
+  1:["Due (asc)",            "order by due asc"],
+  2:["Due (desc)",          "order by due desc"],
+  3:["Creation Time (asc)",   "order by id asc"],
+  4:["Creation Time (desc)", "order by id desc"],
+  5:["Mod Time (asc)",       "order by mod asc"],
+  6:["Mod Time (desc)",     "order by mod desc"],
+  7:["Left (asc)",          "order by left asc"],
+  8:["Left (desc)",        "order by left desc"],
+  9:["Factor (asc)",      "order by factor asc"],
+ 10:["Factor (desc)",    "order by factor desc"]
 
 # == End Config ==========================================
 
@@ -125,7 +127,7 @@ did = ? and queue = 0
 
 def mergeQueues(mulArr, size):
     newQueue=[]
-    for _ in range(size):
+    while len(newQueue)<size:
         for arr in mulArr:
             if arr:
                 newQueue.append(arr.pop())
