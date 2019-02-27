@@ -4,4 +4,4 @@ set REPO=hoochiePapa
 
 %ZIP% %REPO%_20.zip %REPO%.py
 
-%ZIP% %REPO%_21.zip *.py
+%ZIP% %REPO%_21.ankiaddon *.py manifest.json

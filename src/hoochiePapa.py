@@ -2,14 +2,30 @@
 # Copyright: (C) 2018-2019 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.1.1
+# Version: 0.2.2
 
+
+
+CUSTOM_SORT = {
+  0:["None (Shuffled)", "order by due"],
 
 # == User Config =========================================
 
-# None
+  1:["Due (asc)",            "order by due asc"],
+  2:["Due (desc)",          "order by due desc"],
+  3:["Creation Time (asc)",   "order by id asc"],
+  4:["Creation Time (desc)", "order by id desc"],
+  5:["Mod Time (asc)",       "order by mod asc"],
+  6:["Mod Time (desc)",     "order by mod desc"],
+  7:["Left (asc)",          "order by left asc"],
+  8:["Left (desc)",        "order by left desc"],
+  9:["Factor (asc)",      "order by factor asc"],
+ 10:["Factor (desc)",    "order by factor desc"]
 
 # == End Config ==========================================
+
+}
+
 
 ## Performance Config ####################################
 
@@ -57,13 +73,21 @@ def fillNew(self, _old):
     did=self.col.decks.selected()
     lim=self._deckNewLimit(did)
     if lim:
+        sortLevel=qc.get("hoochiePapaSort", 0)
+        assert sortLevel < len(CUSTOM_SORT)
+        sortBy=CUSTOM_SORT[sortLevel][1]
+
         lim=min(self.queueLimit,lim)
-        self._newQueue=getNewQueuePerSubDeck(self,lim)
+        self._newQueue=getNewQueuePerSubDeck(self,sortBy,lim)
         if self._newQueue:
-            r = random.Random()
-            # r.seed(self.today) #same seed in case user edits card.
-            r.shuffle(self._newQueue)
+            if sortLevel:
+                self._newQueue.reverse() #preserve order
+            else:
+                r = random.Random()
+                # r.seed(self.today) #same seed in case user edits card.
+                r.shuffle(self._newQueue)
             return True
+
     if self.newCount:
         # if we didn't get a card but the count is non-zero,
         # we need to check again for any cards that were
@@ -73,8 +97,8 @@ def fillNew(self, _old):
 
 
 #Custom queue builder for New-Queue
-def getNewQueuePerSubDeck(sched,penetration):
-    newQueue=[]
+def getNewQueuePerSubDeck(sched, sortBy, penetration):
+    mulArr=[]
     LEN=len(sched._newDids)
     if LEN>DECK_LIST_SHUFFLE_LIMIT: #segments
         sched._newDids=cutDecks(sched._newDids,4) #0based
@@ -83,6 +107,7 @@ def getNewQueuePerSubDeck(sched,penetration):
         r.shuffle(sched._newDids)
 
     pen=max(5,penetration//LEN) #if div by large val
+    size=0
     for did in sched._newDids:
         lim=sched._deckNewLimit(did)
         if not lim: continue
@@ -91,9 +116,21 @@ def getNewQueuePerSubDeck(sched,penetration):
         arr=sched.col.db.list("""
 select id from cards where
 did = ? and queue = 0
-order by due limit ?""", did, lim)
-        newQueue.extend(arr)
-        if len(newQueue)>=penetration: break
+%s limit ?"""%sortBy, did, lim)
+        arr.reverse()
+        mulArr.append(arr)
+        size+=len(arr)
+        if size>=penetration: break
+
+    return mergeQueues(mulArr,size)
+
+
+def mergeQueues(mulArr, size):
+    newQueue=[]
+    while len(newQueue)<size:
+        for arr in mulArr:
+            if arr:
+                newQueue.append(arr.pop())
     return newQueue
 
 
@@ -145,17 +182,48 @@ def setupUi(self, Preferences):
     self.hoochiePapa = QtWidgets.QCheckBox(self.lrnStage)
     self.hoochiePapa.setText(_('Hoochie Papa! Randomize New'))
     self.lrnStageGLayout.addWidget(self.hoochiePapa, r, 0, 1, 3)
+    self.hoochiePapa.clicked.connect(lambda:toggle(self))
+
+    r+=1
+    self.hoochiePapaSortLbl=QtWidgets.QLabel(self.lrnStage)
+    self.hoochiePapaSortLbl.setText(_("      Sort NewQ By:"))
+    self.lrnStageGLayout.addWidget(self.hoochiePapaSortLbl, r, 0, 1, 1)
+
+    self.hoochiePapaSort = QtWidgets.QComboBox(self.lrnStage)
+    if ANKI21:
+        itms=CUSTOM_SORT.items()
+    else:
+        itms=CUSTOM_SORT.iteritems()
+    for i,v in itms:
+        self.hoochiePapaSort.addItem(_(""))
+        self.hoochiePapaSort.setItemText(i, _(v[0]))
+    self.lrnStageGLayout.addWidget(self.hoochiePapaSort, r, 1, 1, 2)
 
 
 def load(self, mw):
     qc = self.mw.col.conf
     cb=qc.get("hoochiePapa", 0)
     self.form.hoochiePapa.setCheckState(cb)
+    idx=qc.get("hoochiePapaSort", 0)
+    self.form.hoochiePapaSort.setCurrentIndex(idx)
+    toggle(self.form)
 
 
 def save(self):
+    toggle(self.form)
     qc = self.mw.col.conf
     qc['hoochiePapa']=self.form.hoochiePapa.checkState()
+    qc['hoochiePapaSort']=self.form.hoochiePapaSort.currentIndex()
+
+
+def toggle(self):
+    checked=self.hoochiePapa.checkState()
+    if checked:
+        grayout=False
+    else:
+        grayout=True
+    self.hoochiePapaSort.setDisabled(grayout)
+    self.hoochiePapaSortLbl.setDisabled(grayout)
 
 
 aqt.forms.preferences.Ui_Preferences.setupUi = wrap(aqt.forms.preferences.Ui_Preferences.setupUi, setupUi, "after")
