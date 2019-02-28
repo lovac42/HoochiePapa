@@ -2,7 +2,7 @@
 # Copyright: (C) 2018-2019 Lovac42
 # Support: https://github.com/lovac42/HoochiePapa
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
-# Version: 0.2.2
+# Version: 0.3.0
 
 
 
@@ -73,12 +73,17 @@ def fillNew(self, _old):
     did=self.col.decks.selected()
     lim=self._deckNewLimit(did)
     if lim:
+        perDeckLimit=qc.get("hoochiePapa",2)==2
         sortLevel=qc.get("hoochiePapaSort", 0)
         assert sortLevel < len(CUSTOM_SORT)
         sortBy=CUSTOM_SORT[sortLevel][1]
 
         lim=min(self.queueLimit,lim)
-        self._newQueue=getNewQueuePerSubDeck(self,sortBy,lim)
+        if perDeckLimit:
+            self._newQueue=getNewQueuePerSubDeck(self,sortBy,lim)
+        else: #parent limit
+            self._newQueue=getNewQueue(self,sortBy,lim)
+
         if self._newQueue:
             if sortLevel:
                 self._newQueue.reverse() #preserve order
@@ -96,8 +101,21 @@ def fillNew(self, _old):
         return self._fillNew()
 
 
+
+def getNewQueue(sched, sortBy, penetration):
+    debugInfo('new queue builder (no subdeck constrain)')
+    deckList=ids2str(sched.col.decks.active())
+    newQueue=sched.col.db.list("""
+select id from cards where
+did in %s and queue = 0 %s limit ?
+""" % (deckList, sortBy), penetration)
+    return newQueue #Order needs tobe reversed for custom sorts
+
+
+
 #Custom queue builder for New-Queue
 def getNewQueuePerSubDeck(sched, sortBy, penetration):
+    debugInfo('new queue builder (per subdeck limit)')
     mulArr=[]
     LEN=len(sched._newDids)
     if LEN>DECK_LIST_SHUFFLE_LIMIT: #segments
@@ -180,7 +198,8 @@ def setupUi(self, Preferences):
 
     r=self.lrnStageGLayout.rowCount()
     self.hoochiePapa = QtWidgets.QCheckBox(self.lrnStage)
-    self.hoochiePapa.setText(_('Hoochie Papa! Randomize New'))
+    self.hoochiePapa.setText(_('Hoochie Papa! Randomize New Queue'))
+    self.hoochiePapa.setTristate(True)
     self.lrnStageGLayout.addWidget(self.hoochiePapa, r, 0, 1, 3)
     self.hoochiePapa.clicked.connect(lambda:toggle(self))
 
@@ -222,6 +241,12 @@ def toggle(self):
         grayout=False
     else:
         grayout=True
+
+    if checked==1:
+        txt='Hoochie Papa! Bypass Subdeck Constrain'
+    else:
+        txt='Hoochie Papa! Randomize New Queue'
+    self.hoochiePapa.setText(_(txt))
     self.hoochiePapaSort.setDisabled(grayout)
     self.hoochiePapaSortLbl.setDisabled(grayout)
 
