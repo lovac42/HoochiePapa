@@ -115,7 +115,7 @@ def getNewQueuePerSubDeck(sched, sortBy, penetration):
         arr=sched.col.db.list("""
 select id from cards where
 did = ? and queue = 0
-%s limit ?"""%sortBy, did, lim)
+%s,ord limit ?"""%sortBy, did, lim)
         arr.reverse()
         mulArr.append(arr)
         size+=len(arr)
@@ -158,12 +158,14 @@ if ANKI21:
 import aqt
 import aqt.preferences
 from aqt.qt import *
+from anki.lang import _
 
 
-if ANKI21:
-    from PyQt5 import QtCore, QtGui, QtWidgets
-else:
+try:
     from PyQt4 import QtCore, QtGui as QtWidgets
+except:
+    from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 def setupUi(self, Preferences):
     try:
@@ -179,7 +181,7 @@ def setupUi(self, Preferences):
 
     r=self.lrnStageGLayout.rowCount()
     self.hoochiePapa = QtWidgets.QCheckBox(self.lrnStage)
-    self.hoochiePapa.setText(_('Hoochie Papa! Randomize New'))
+    self.hoochiePapa.setText(_('Hoochie Papa! Randomize New Queue'))
     self.lrnStageGLayout.addWidget(self.hoochiePapa, r, 0, 1, 3)
     self.hoochiePapa.clicked.connect(lambda:toggle(self))
 
