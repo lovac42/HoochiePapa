@@ -55,6 +55,10 @@ def setupUi(self, Preferences):
         self.hoochiePapaSort.setItemText(i, _(v[0]))
     papa_grid_layout.addWidget(self.hoochiePapaSort, r, 1, 1, 3)
 
+    r+=1
+    footnote_label = QtWidgets.QLabel(papa_groupbox)
+    footnote_label.setText(_("&nbsp;&nbsp;&nbsp;<i>* If there is anything you don't understand, GIYF.</i>"))
+    papa_grid_layout.addWidget(footnote_label, r, 0, 1, 3)
 
 
 def load(self, mw):
