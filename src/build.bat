@@ -2,7 +2,7 @@
 set ZIP=C:\PROGRA~1\7-Zip\7z.exe a -tzip -y -r
 set REPO=hoochie_papa
 set PACKID=1173108619
-set VERSION=0.2.2
+set VERSION=0.2.3
 
 
 quick_manifest.exe "Hoochie Papa: NewQ" "%PACKID%" >%REPO%\manifest.json

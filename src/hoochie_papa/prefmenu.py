@@ -13,7 +13,8 @@ from anki.hooks import wrap
 
 from .sort import CUSTOM_SORT
 from .lib.com.lovac42.anki.version import ANKI21, ANKI20
-# from .lib.com.lovac42.anki.gui import muffins
+from .lib.com.lovac42.anki.gui.checkbox import TristateCheckbox
+from .lib.com.lovac42.anki.gui import muffins
 
 
 if ANKI21:
@@ -23,41 +24,44 @@ else:
 
 
 def setupUi(self, Preferences):
-    try:
-        grid=self.lrnStageGLayout
-    except AttributeError:
-        self.lrnStage=QtWidgets.QWidget()
-        self.tabWidget.addTab(self.lrnStage, "Muffins")
-        self.lrnStageGLayout=QtWidgets.QGridLayout()
-        self.lrnStageVLayout=QtWidgets.QVBoxLayout(self.lrnStage)
-        self.lrnStageVLayout.addLayout(self.lrnStageGLayout)
-        spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.lrnStageVLayout.addItem(spacerItem)
+    grid_layout = muffins.getMuffinsTab(self)
+    r = grid_layout.rowCount()
 
-    r=self.lrnStageGLayout.rowCount()
-    self.hoochiePapa = QtWidgets.QCheckBox(self.lrnStage)
-    self.hoochiePapa.setText(_('Hoochie Papa! Randomize New Queue'))
-    self.lrnStageGLayout.addWidget(self.hoochiePapa, r, 0, 1, 3)
+    papa_groupbox = QtWidgets.QGroupBox(self.lrnStage)
+    papa_groupbox.setTitle("Hoochie Papa!")
+    papa_grid_layout = QtWidgets.QGridLayout(papa_groupbox)
+    grid_layout.addWidget(papa_groupbox, r, 0, 1, 3)
+
+    self.hoochiePapa = TristateCheckbox(papa_groupbox)
+    self.hoochiePapa.setTristate(False)
+    self.hoochiePapa.setDescriptions({
+        Qt.Unchecked:        "Hoochie Papa addon has been disabled",
+        Qt.PartiallyChecked: "Error, should not have seen this.",
+        Qt.Checked:          "Randomize new cards, check subdeck limits",
+    })
+
+    papa_grid_layout.addWidget(self.hoochiePapa, r, 0, 1, 3)
     self.hoochiePapa.clicked.connect(lambda:toggle(self))
 
     r+=1
-    self.hoochiePapaSortLbl=QtWidgets.QLabel(self.lrnStage)
-    self.hoochiePapaSortLbl.setText(_("      Sort NewQ By:"))
-    self.lrnStageGLayout.addWidget(self.hoochiePapaSortLbl, r, 0, 1, 1)
+    self.hoochiePapaSortLbl=QtWidgets.QLabel(papa_groupbox)
+    self.hoochiePapaSortLbl.setText(_("      Sort new cards by:"))
+    papa_grid_layout.addWidget(self.hoochiePapaSortLbl, r, 0, 1, 1)
 
-    self.hoochiePapaSort = QtWidgets.QComboBox(self.lrnStage)
+    self.hoochiePapaSort = QtWidgets.QComboBox(papa_groupbox)
     sort_itms = CUSTOM_SORT.iteritems if ANKI20 else CUSTOM_SORT.items
     for i,v in sort_itms():
-        self.hoochiePapaSort.addItem(_(""))
+        self.hoochiePapaSort.addItem("")
         self.hoochiePapaSort.setItemText(i, _(v[0]))
-    self.lrnStageGLayout.addWidget(self.hoochiePapaSort, r, 1, 1, 2)
+    papa_grid_layout.addWidget(self.hoochiePapaSort, r, 1, 1, 3)
+
 
 
 def load(self, mw):
     qc = self.mw.col.conf
-    cb=qc.get("hoochiePapa", 0)
+    cb = qc.get("hoochiePapa", Qt.Unchecked)
     self.form.hoochiePapa.setCheckState(cb)
-    idx=qc.get("hoochiePapaSort", 0)
+    idx = qc.get("hoochiePapaSort", 0)
     self.form.hoochiePapaSort.setCurrentIndex(idx)
     toggle(self.form)
 
@@ -65,21 +69,18 @@ def load(self, mw):
 def save(self):
     toggle(self.form)
     qc = self.mw.col.conf
-    qc['hoochiePapa']=self.form.hoochiePapa.checkState()
-    qc['hoochiePapaSort']=self.form.hoochiePapaSort.currentIndex()
+    qc['hoochiePapa'] = int(self.form.hoochiePapa.checkState())
+    qc['hoochiePapaSort'] = self.form.hoochiePapaSort.currentIndex()
 
 
 def toggle(self):
-    checked=self.hoochiePapa.checkState()
-    if checked:
-        grayout=False
-    else:
-        grayout=True
-    self.hoochiePapaSort.setDisabled(grayout)
-    self.hoochiePapaSortLbl.setDisabled(grayout)
+    state = self.hoochiePapa.checkState()
+    self.hoochiePapaSort.setDisabled(state == Qt.Unchecked)
+    self.hoochiePapaSortLbl.setDisabled(state == Qt.Unchecked)
 
 
 
+# Wrap crap ######################
 
 aqt.forms.preferences.Ui_Preferences.setupUi = wrap(
     aqt.forms.preferences.Ui_Preferences.setupUi, setupUi, "after"
