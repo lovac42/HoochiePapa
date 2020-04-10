@@ -4,28 +4,6 @@
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
 
 
-
-CUSTOM_SORT = {
-  0:["None (Shuffled)", "order by due"],
-
-# == User Config =========================================
-
-  1:["Due (asc)",            "order by due asc"],
-  2:["Due (desc)",          "order by due desc"],
-  3:["Creation Time (asc)",   "order by id asc"],
-  4:["Creation Time (desc)", "order by id desc"],
-  5:["Mod Time (asc)",       "order by mod asc"],
-  6:["Mod Time (desc)",     "order by mod desc"],
-  7:["Left (asc)",          "order by left asc"],
-  8:["Left (desc)",        "order by left desc"],
-  9:["Factor (asc)",      "order by factor asc"],
- 10:["Factor (desc)",    "order by factor desc"]
-
-# == End Config ==========================================
-
-}
-
-
 ## Performance Config ####################################
 
 # Performance impact cost O(n)
@@ -41,8 +19,9 @@ from anki.utils import ids2str
 from aqt.utils import showText
 from anki.hooks import wrap
 
-from anki import version
-ANKI21 = version.startswith("2.1.")
+from .sort import CUSTOM_SORT
+from .lib.com.lovac42.anki.version import ANKI20
+
 
 
 #Turn this on if you are having problems.
@@ -145,88 +124,6 @@ def cutDecks(queue,cnt=0):
 
 
 anki.sched.Scheduler._fillNew = wrap(anki.sched.Scheduler._fillNew, fillNew, 'around')
-if ANKI21:
+if not ANKI20:
     import anki.schedv2
     anki.schedv2.Scheduler._fillNew = wrap(anki.schedv2.Scheduler._fillNew, fillNew, 'around')
-
-
-##################################################
-#
-#  GUI stuff, adds preference menu options
-#
-#################################################
-import aqt
-import aqt.preferences
-from aqt.qt import *
-from anki.lang import _
-
-
-try:
-    from PyQt4 import QtCore, QtGui as QtWidgets
-except:
-    from PyQt5 import QtCore, QtGui, QtWidgets
-
-
-def setupUi(self, Preferences):
-    try:
-        grid=self.lrnStageGLayout
-    except AttributeError:
-        self.lrnStage=QtWidgets.QWidget()
-        self.tabWidget.addTab(self.lrnStage, "Muffins")
-        self.lrnStageGLayout=QtWidgets.QGridLayout()
-        self.lrnStageVLayout=QtWidgets.QVBoxLayout(self.lrnStage)
-        self.lrnStageVLayout.addLayout(self.lrnStageGLayout)
-        spacerItem=QtWidgets.QSpacerItem(1, 1, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.lrnStageVLayout.addItem(spacerItem)
-
-    r=self.lrnStageGLayout.rowCount()
-    self.hoochiePapa = QtWidgets.QCheckBox(self.lrnStage)
-    self.hoochiePapa.setText(_('Hoochie Papa! Randomize New Queue'))
-    self.lrnStageGLayout.addWidget(self.hoochiePapa, r, 0, 1, 3)
-    self.hoochiePapa.clicked.connect(lambda:toggle(self))
-
-    r+=1
-    self.hoochiePapaSortLbl=QtWidgets.QLabel(self.lrnStage)
-    self.hoochiePapaSortLbl.setText(_("      Sort NewQ By:"))
-    self.lrnStageGLayout.addWidget(self.hoochiePapaSortLbl, r, 0, 1, 1)
-
-    self.hoochiePapaSort = QtWidgets.QComboBox(self.lrnStage)
-    if ANKI21:
-        itms=CUSTOM_SORT.items()
-    else:
-        itms=CUSTOM_SORT.iteritems()
-    for i,v in itms:
-        self.hoochiePapaSort.addItem(_(""))
-        self.hoochiePapaSort.setItemText(i, _(v[0]))
-    self.lrnStageGLayout.addWidget(self.hoochiePapaSort, r, 1, 1, 2)
-
-
-def load(self, mw):
-    qc = self.mw.col.conf
-    cb=qc.get("hoochiePapa", 0)
-    self.form.hoochiePapa.setCheckState(cb)
-    idx=qc.get("hoochiePapaSort", 0)
-    self.form.hoochiePapaSort.setCurrentIndex(idx)
-    toggle(self.form)
-
-
-def save(self):
-    toggle(self.form)
-    qc = self.mw.col.conf
-    qc['hoochiePapa']=self.form.hoochiePapa.checkState()
-    qc['hoochiePapaSort']=self.form.hoochiePapaSort.currentIndex()
-
-
-def toggle(self):
-    checked=self.hoochiePapa.checkState()
-    if checked:
-        grayout=False
-    else:
-        grayout=True
-    self.hoochiePapaSort.setDisabled(grayout)
-    self.hoochiePapaSortLbl.setDisabled(grayout)
-
-
-aqt.forms.preferences.Ui_Preferences.setupUi = wrap(aqt.forms.preferences.Ui_Preferences.setupUi, setupUi, "after")
-aqt.preferences.Preferences.__init__ = wrap(aqt.preferences.Preferences.__init__, load, "after")
-aqt.preferences.Preferences.accept = wrap(aqt.preferences.Preferences.accept, save, "before")
