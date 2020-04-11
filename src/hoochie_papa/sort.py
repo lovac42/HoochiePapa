@@ -5,7 +5,7 @@
 
 
 CUSTOM_SORT = {
-  0:["None (Shuffled)", "order by due"],
+  0:["None (Shuffled)", "order by due"], #Shuffle is applied at the end
 
 # == User Config =========================================
 
@@ -18,8 +18,9 @@ CUSTOM_SORT = {
   7:["Left (asc)",          "order by left asc"],
   8:["Left (desc)",        "order by left desc"],
   9:["Factor (asc)",      "order by factor asc"],
- 10:["Factor (desc)",    "order by factor desc"]
+ 10:["Factor (desc)",    "order by factor desc"],
 
 # == End Config ==========================================
 
+ 11:["Unrestricted Random (HighCPU)",  "order by random()"]
 }
