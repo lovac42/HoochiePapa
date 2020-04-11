@@ -6,9 +6,9 @@
 
 ## Performance Config ####################################
 
-# Performance impact cost O(n)
-# Uses quick shuffle if limit is exceeded.
-DECK_LIST_SHUFFLE_LIMIT = 256
+# Each round selects at least 2 cards per deck.
+# 2-3 seems to be a good range.
+CARD_PER_DECK = 2
 
 ##########################################################
 
@@ -22,6 +22,7 @@ from anki.hooks import wrap
 from .sort import CUSTOM_SORT
 from .lib.com.lovac42.anki.version import ANKI20
 
+RAND = random.Random().shuffle
 
 
 #Turn this on if you are having problems.
@@ -61,9 +62,7 @@ def fillNew(self, _old):
             if sortLevel:
                 self._newQueue.reverse() #preserve order
             else:
-                r = random.Random()
-                # r.seed(self.today) #same seed in case user edits card.
-                r.shuffle(self._newQueue)
+                RAND(self._newQueue)
             return True
 
     if self.newCount:
@@ -77,15 +76,11 @@ def fillNew(self, _old):
 #Custom queue builder for New-Queue
 def getNewQueuePerSubDeck(sched, sortBy, penetration):
     mulArr=[]
-    LEN=len(sched._newDids)
-    if LEN>DECK_LIST_SHUFFLE_LIMIT: #segments
-        sched._newDids=cutDecks(sched._newDids,4) #0based
-    else: #shuffle deck ids
-        r=random.Random()
-        r.shuffle(sched._newDids)
-
-    pen=max(5,penetration//LEN) #if div by large val
     size=0
+
+    pen=max(CARD_PER_DECK, penetration//len(sched._newDids))
+    RAND(sched._newDids)
+
     for did in sched._newDids:
         lim=sched._deckNewLimit(did)
         if not lim: continue
@@ -111,16 +106,6 @@ def mergeQueues(mulArr, size):
                 newQueue.append(arr.pop())
     return newQueue
 
-
-#Like cutting cards, this is a quick and dirty way to randomize the deck ids
-def cutDecks(queue,cnt=0):
-    total=len(queue)
-    p=random.randint(30,70) # %
-    cut=total*p//100
-    if cnt:
-        q=cutDecks(queue[cut:],cnt-1)
-        return q+cutDecks(queue[:cut],cnt-1)
-    return queue[cut:]+queue[:cut]
 
 
 anki.sched.Scheduler._fillNew = wrap(anki.sched.Scheduler._fillNew, fillNew, 'around')
