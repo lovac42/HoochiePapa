@@ -29,7 +29,8 @@ def setupUi(self, Preferences):
         Qt.Checked:          "Randomize new cards, check subdeck limits",
     })
     papa_grid_layout.addWidget(self.hoochiePapa, r, 0, 1, 3)
-    self.hoochiePapa.clicked.connect(lambda:toggle(self))
+    self.hoochiePapa.clicked.connect(lambda:onClick(self))
+    self.hoochiePapa.onClick = onClick
 
     r+=1
     self.hoochiePapaSortLbl=QLabel(papa_groupbox)
@@ -55,20 +56,21 @@ def load(self, mw):
     self.form.hoochiePapa.setCheckState(cb)
     idx = qc.get("hoochiePapaSort", 0)
     self.form.hoochiePapaSort.setCurrentIndex(idx)
-    toggle(self.form)
+    onClick(self.form)
 
 
 def save(self):
-    toggle(self.form)
+    onClick(self.form)
     qc = self.mw.col.conf
     qc['hoochiePapa'] = int(self.form.hoochiePapa.checkState())
     qc['hoochiePapaSort'] = self.form.hoochiePapaSort.currentIndex()
 
 
-def toggle(self):
-    state = self.hoochiePapa.checkState()
-    self.hoochiePapaSort.setDisabled(state == Qt.Unchecked)
-    self.hoochiePapaSortLbl.setDisabled(state == Qt.Unchecked)
+def onClick(form):
+    state = form.hoochiePapa.checkState()
+    grayout = state == Qt.Unchecked
+    form.hoochiePapaSort.setDisabled(grayout)
+    form.hoochiePapaSortLbl.setDisabled(grayout)
 
 
 
