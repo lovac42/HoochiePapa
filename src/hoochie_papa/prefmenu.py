@@ -12,6 +12,7 @@ from anki.lang import _
 from anki.hooks import wrap
 
 from .sort import CUSTOM_SORT
+from .self_test import run_tests
 from .lib.com.lovac42.anki.version import ANKI20
 from .lib.com.lovac42.anki.gui.checkbox import TristateCheckbox
 from .lib.com.lovac42.anki.gui import muffins
@@ -53,12 +54,18 @@ def load(self, mw):
     self.form.hoochiePapa.setCheckState(cb)
     idx = qc.get("hoochiePapaSort", 0)
     self.form.hoochiePapaSort.setCurrentIndex(idx)
-    onClick(self.form) #refresh
+    _updateDisplay(self.form)
 
 
 def onClick(form):
+    state = int(form.hoochiePapa.checkState())
+    mw.col.conf['hoochiePapa'] = state #save
+    _updateDisplay(form)
+    run_tests.testWrap(state)
+
+
+def _updateDisplay(form):
     state = form.hoochiePapa.checkState()
-    mw.col.conf['hoochiePapa'] = int(state) #save
     grayout = state == Qt.Unchecked
     form.hoochiePapaSort.setDisabled(grayout)
     form.hoochiePapaSortLbl.setDisabled(grayout)

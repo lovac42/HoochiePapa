@@ -16,25 +16,18 @@ import random
 import anki.sched
 from aqt import mw
 from anki.utils import ids2str
-from aqt.utils import showText
 from anki.hooks import wrap
 
 from .sort import CUSTOM_SORT
+from .self_test import run_tests
 from .lib.com.lovac42.anki.version import ANKI20
 
 RAND = random.Random().shuffle
 
 
-#Turn this on if you are having problems.
-def debugInfo(msg):
-    # print(msg) #console
-    # showText(msg) #Windows
-    return
-
-
-#From: anki.schedv2.py
-#Mod:  Various, see logs
 def fillNew(self, _old):
+    run_tests.reset(_old)
+
     if self._newQueue:
         return True
     if not self.newCount:
@@ -42,12 +35,13 @@ def fillNew(self, _old):
     # Below section is invoked everytime the reviewer is reset (edits, adds, etc)
 
     if self.col.decks.get(self.col.decks.selected(),False)['dyn']:
+        run_tests.state = 3
         return _old(self)
 
     qc = self.col.conf
     if not qc.get("hoochiePapa", False):
+        run_tests.state = 0
         return _old(self)
-    debugInfo('using hoochiePapa')
 
     did=self.col.decks.selected()
     lim=self._deckNewLimit(did)
@@ -75,6 +69,8 @@ def fillNew(self, _old):
 
 #Custom queue builder for New-Queue
 def getNewQueuePerSubDeck(sched, sortBy, penetration):
+    run_tests.state = 2
+
     mulArr=[]
     size=0
 
