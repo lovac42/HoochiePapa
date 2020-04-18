@@ -6,6 +6,7 @@
 
 import aqt
 import aqt.preferences
+from aqt import mw
 from aqt.qt import *
 from anki.lang import _
 from anki.hooks import wrap
@@ -43,6 +44,7 @@ def setupUi(self, Preferences):
         self.hoochiePapaSort.addItem("")
         self.hoochiePapaSort.setItemText(i, _(v[0]))
     papa_grid_layout.addWidget(self.hoochiePapaSort, r, 1, 1, 3)
+    self.hoochiePapaSort.currentIndexChanged.connect(lambda:onChanged(self.hoochiePapaSort))
 
 
 def load(self, mw):
@@ -51,22 +53,19 @@ def load(self, mw):
     self.form.hoochiePapa.setCheckState(cb)
     idx = qc.get("hoochiePapaSort", 0)
     self.form.hoochiePapaSort.setCurrentIndex(idx)
-    onClick(self.form)
-
-
-def save(self):
-    onClick(self.form)
-    qc = self.mw.col.conf
-    qc['hoochiePapa'] = int(self.form.hoochiePapa.checkState())
-    qc['hoochiePapaSort'] = self.form.hoochiePapaSort.currentIndex()
+    onClick(self.form) #refresh
 
 
 def onClick(form):
     state = form.hoochiePapa.checkState()
+    mw.col.conf['hoochiePapa'] = int(state) #save
     grayout = state == Qt.Unchecked
     form.hoochiePapaSort.setDisabled(grayout)
     form.hoochiePapaSortLbl.setDisabled(grayout)
 
+
+def onChanged(combobox):
+    mw.col.conf['hoochiePapaSort'] = combobox.currentIndex()
 
 
 # Wrap crap ######################
@@ -77,8 +76,4 @@ aqt.forms.preferences.Ui_Preferences.setupUi = wrap(
 
 aqt.preferences.Preferences.__init__ = wrap(
     aqt.preferences.Preferences.__init__, load, "after"
-)
-
-aqt.preferences.Preferences.accept = wrap(
-    aqt.preferences.Preferences.accept, save, "before"
 )
