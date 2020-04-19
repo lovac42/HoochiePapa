@@ -32,9 +32,11 @@ def fillNew(self, _old):
         return True
     if not self.newCount:
         return False
+
     # Below section is invoked everytime the reviewer is reset (edits, adds, etc)
 
-    if self.col.decks.get(self.col.decks.selected(),False)['dyn']:
+    did=self.col.decks.selected()
+    if self.col.decks.get(did)['dyn']:
         run_tests.state = 3
         return _old(self)
 
@@ -43,7 +45,6 @@ def fillNew(self, _old):
         run_tests.state = 0
         return _old(self)
 
-    did=self.col.decks.selected()
     lim=self._deckNewLimit(did)
     if lim:
         sortLevel=qc.get("hoochiePapaSort", 0)
