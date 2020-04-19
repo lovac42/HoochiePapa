@@ -13,39 +13,39 @@ FILTERED_DECK = 3
 
 class Tests:
     def __init__(self):
-        self.reset(None)
+        self.reset()
 
-    def reset(self, old):
-        self.old = old
+    def reset(self):
         self.state = -1
 
-    def testWrap(self, state):
+    def testWrap(self, checkbox):
         if mw.state != "review":
             tooltip("Papa can't run self-tests, you are not in the reviewer.", period=1200)
         elif not mw.col.sched.newCount:
             tooltip("Papa can't run self-tests, you don't have enough new cards.", period=1200)
-        elif self.old:
-
-            from .hoochiePapa import fillNew
-
+        else:
+            self.reset()
             # Clears queue from blocking test. But
             # this must be reset to avoid
             # double loading of the same card.
+            mw.col.sched.newCount = 20
             mw.col.sched._newQueue = []
             try:
-                fillNew(mw.col.sched, self.old)
+                mw.col.sched._fillNew()
             finally:
                 mw.reset()
 
-            assert state == self.state or self.state == FILTERED_DECK, "\
-HoochiePapa, self-test failed. Test value was not as expected."
-
             if self.state==FILTERED_DECK:
                 tooltip("Papa doesn't work with filtered decks.", period=1200)
-            elif state:
-                tooltip("Papa is wrapped successfully!", period=800)
+                return
+
+            assert checkbox == self.state, "\
+HoochiePapa, self-test failed. Test value was not as expected."
+
+            if checkbox:
+                tooltip("Papa was wrapped successfully!", period=800)
             else:
-                tooltip("Papa is unwrapped...", period=800)
+                tooltip("Papa was unwrapped...", period=800)
 
 
 run_tests = Tests()

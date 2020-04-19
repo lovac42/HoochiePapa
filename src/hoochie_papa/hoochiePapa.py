@@ -26,8 +26,6 @@ RAND = random.Random().shuffle
 
 
 def fillNew(self, _old):
-    run_tests.reset(_old)
-
     if self._newQueue:
         return True
     if not self.newCount:
@@ -105,7 +103,12 @@ def mergeQueues(mulArr, size):
 
 
 
-anki.sched.Scheduler._fillNew = wrap(anki.sched.Scheduler._fillNew, fillNew, 'around')
+anki.sched.Scheduler._fillNew = wrap(
+    anki.sched.Scheduler._fillNew, fillNew, 'around'
+)
+
 if not ANKI20:
     import anki.schedv2
-    anki.schedv2.Scheduler._fillNew = wrap(anki.schedv2.Scheduler._fillNew, fillNew, 'around')
+    anki.schedv2.Scheduler._fillNew = wrap(
+        anki.schedv2.Scheduler._fillNew, fillNew, 'around'
+    )
