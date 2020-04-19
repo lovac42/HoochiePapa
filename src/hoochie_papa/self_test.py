@@ -21,9 +21,9 @@ class Tests:
 
     def testWrap(self, state):
         if mw.state != "review":
-            tooltip("Papa can not run self-tests, you are not in the reviewer.", period=1500)
+            tooltip("Papa can't run self-tests, you are not in the reviewer.", period=1200)
         elif not mw.col.sched.newCount:
-            tooltip("Papa can not run self-tests, you have no more new cards.", period=1500)
+            tooltip("Papa can't run self-tests, you don't have enough new cards.", period=1200)
         elif self.old:
 
             from .hoochiePapa import fillNew
@@ -41,7 +41,7 @@ class Tests:
 HoochiePapa, self-test failed. Test value was not as expected."
 
             if self.state==FILTERED_DECK:
-                tooltip("Papa doesn't work with filtered decks.", period=1500)
+                tooltip("Papa doesn't work with filtered decks.", period=1200)
             elif state:
                 tooltip("Papa is wrapped successfully!", period=800)
             else:
