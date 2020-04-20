@@ -4,11 +4,11 @@
 # License: GNU GPL, version 3 or later; http://www.gnu.org/copyleft/gpl.html
 
 
+# Note: Except for swapping 0 and 11,
+# Changing these may cause self-test errors
+
 CUSTOM_SORT = {
   0:["None (Shuffled)", "order by due"], #Shuffle is applied at the end
-
-# == User Config =========================================
-
   1:["Due (asc)",            "order by due asc"],
   2:["Due (desc)",          "order by due desc"],
   3:["Creation Time (asc)",   "order by id asc"],
@@ -19,8 +19,5 @@ CUSTOM_SORT = {
   8:["Left (desc)",        "order by left desc"],
   9:["Factor (asc)",      "order by factor asc"],
  10:["Factor (desc)",    "order by factor desc"],
-
-# == End Config ==========================================
-
  11:["Unrestricted Random (HighCPU)",  "order by random()"]
 }

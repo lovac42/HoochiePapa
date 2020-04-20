@@ -18,6 +18,9 @@ from .lib.com.lovac42.anki.gui.checkbox import TristateCheckbox
 from .lib.com.lovac42.anki.gui import muffins
 
 
+loaded = False
+
+
 def setupUi(self, Preferences):
     papa_groupbox = muffins.getMuffinsGroupbox(self, "Hoochie Papa!")
     papa_grid_layout = QGridLayout(papa_groupbox)
@@ -49,12 +52,19 @@ def setupUi(self, Preferences):
 
 
 def load(self, mw):
+    global loaded
     qc = self.mw.col.conf
     cb = qc.get("hoochiePapa", Qt.Unchecked)
     self.form.hoochiePapa.setCheckState(cb)
     idx = qc.get("hoochiePapaSort", 0)
     self.form.hoochiePapaSort.setCurrentIndex(idx)
     _updateDisplay(self.form)
+    loaded = True
+
+
+def save(self):
+    global loaded
+    loaded = False
 
 
 def onClick(form):
@@ -72,10 +82,16 @@ def _updateDisplay(form):
 
 
 def onChanged(combobox):
-    mw.col.conf['hoochiePapaSort'] = combobox.currentIndex()
+    idx = combobox.currentIndex()
+    mw.col.conf['hoochiePapaSort'] = idx
+    if loaded:
+        run_tests.testSort(idx)
 
 
 # Wrap crap ######################
+
+# if point version < 23? Use old wrap
+# TODO: Find the point version for these new hooks.
 
 aqt.forms.preferences.Ui_Preferences.setupUi = wrap(
     aqt.forms.preferences.Ui_Preferences.setupUi, setupUi, "after"
@@ -83,4 +99,8 @@ aqt.forms.preferences.Ui_Preferences.setupUi = wrap(
 
 aqt.preferences.Preferences.__init__ = wrap(
     aqt.preferences.Preferences.__init__, load, "after"
+)
+
+aqt.preferences.Preferences.accept = wrap(
+    aqt.preferences.Preferences.accept, save, "before"
 )
