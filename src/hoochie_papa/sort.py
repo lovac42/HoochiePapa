@@ -19,5 +19,5 @@ CUSTOM_SORT = {
   8:["Left (desc)",        "order by left desc"],
   9:["Factor (asc)",      "order by factor asc"],
  10:["Factor (desc)",    "order by factor desc"],
- 11:["Unrestricted Random (HighCPU)",  "order by random()"]
+ 11:["Unrestricted Random (High CPU)",  "order by random()"]
 }
